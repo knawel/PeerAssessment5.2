@@ -43,7 +43,52 @@ Our study should answer two queston:
 Therefore for this study will be useful next column: `EVTYPE` `FATALITIES` 
 `INJURIES` `PROPDMG` `CROPDMG` `PROPDMGEXP` `CROPDMGEXP`
 
+
+`PROPDMGEXP` `CROPDMGEXP` indicate, who damage could be calculated. There are severel types of data in these column.
+
+```{r}
+NOAA_data$PROPDMGEXP <- as.factor(NOAA_data$PROPDMGEXP)
+NOAA_data$CROPDMGEXP <- as.factor(NOAA_data$CROPDMGEXP)
+
+print(levels(NOAA_data$PROPDMGEXP))
+print(levels(NOAA_data$CROPDMGEXP))
+
+powIndicator <- levels(as.factor(c(levels(NOAA_data$PROPDMGEXP),
+                                   levels(NOAA_data$CROPDMGEXP))))[-1:-4]
+print(powIndicator)
+```
+
+Damage can be calculated as `Expense = A * 10^B`, where A is number from `CROPDMG`/`PROPDMG` field and B is exponential values from table. Numbers are simply B-value, `h/H` for hundreds,`k/K` for thousands, etc.
+
+```{r, results='asis'}
+library("xtable")
+ConvTable<-data.frame(DMGEXP = powIndicator, B = c(0,1,2,3,4,5,6,7,8,9,2,2,3,3,6,6))
+xt <- xtable(ConvTable)
+print(xt, type="html",include.rownames=FALSE)
+
+```
+
+For our purposes `PROPDMG` `CROPDMG` field were recalculated acording this table to compute the total losses.
+
+```{r}
+
+for (e in ConvTable$DMGEXP){
+    NOAA_data$PROPDMG[NOAA_data$PROPDMGEXP == e] <-
+        NOAA_data$PROPDMG[NOAA_data$PROPDMGEXP == e]* 10 ^ ConvTable$B[ConvTable$DMGEXP == e]
+    
+    NOAA_data$CROPDMG[NOAA_data$CROPDMGEXP == e] <-
+        NOAA_data$CROPDMG[NOAA_data$CROPDMGEXP == e]* 10 ^ ConvTable$B[ConvTable$DMGEXP == e]
+}
+
+```
+
 ### Search most harmful type of event
+```{r}
+answ1 <- aggregate(NOAA_data$CROPDMG, by=list(Category=FitbitData$EVTYPE), FUN=sum)
+hist(answ1$x, main = "Total number of steps per day", xlab = "Steps per day", col = "cadetblue2")
+
+```
+
 
 ##Results
  

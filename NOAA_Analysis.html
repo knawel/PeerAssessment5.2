@@ -128,6 +128,172 @@ NOAA_data &lt;- read.csv(bzfile(fileName))</code></pre>
 <li><p>Across the United States, which types of events have the greatest economic consequences?</p></li>
 </ul>
 <p>Therefore for this study will be useful next column: <code>EVTYPE</code> <code>FATALITIES</code> <code>INJURIES</code> <code>PROPDMG</code> <code>CROPDMG</code> <code>PROPDMGEXP</code> <code>CROPDMGEXP</code></p>
+<p><code>PROPDMGEXP</code> <code>CROPDMGEXP</code> indicate, who damage could be calculated. There are severel types of data in these column.</p>
+<pre class="r"><code>NOAA_data$PROPDMGEXP &lt;- as.factor(NOAA_data$PROPDMGEXP)
+NOAA_data$CROPDMGEXP &lt;- as.factor(NOAA_data$CROPDMGEXP)
+
+print(levels(NOAA_data$PROPDMGEXP))</code></pre>
+<pre><code>##  [1] &quot;&quot;  &quot;-&quot; &quot;?&quot; &quot;+&quot; &quot;0&quot; &quot;1&quot; &quot;2&quot; &quot;3&quot; &quot;4&quot; &quot;5&quot; &quot;6&quot; &quot;7&quot; &quot;8&quot; &quot;B&quot; &quot;h&quot; &quot;H&quot; &quot;K&quot;
+## [18] &quot;m&quot; &quot;M&quot;</code></pre>
+<pre class="r"><code>print(levels(NOAA_data$CROPDMGEXP))</code></pre>
+<pre><code>## [1] &quot;&quot;  &quot;?&quot; &quot;0&quot; &quot;2&quot; &quot;B&quot; &quot;k&quot; &quot;K&quot; &quot;m&quot; &quot;M&quot;</code></pre>
+<pre class="r"><code>powIndicator &lt;- levels(as.factor(c(levels(NOAA_data$PROPDMGEXP),
+                                   levels(NOAA_data$CROPDMGEXP))))[-1:-4]
+print(powIndicator)</code></pre>
+<pre><code>##  [1] &quot;0&quot; &quot;1&quot; &quot;2&quot; &quot;3&quot; &quot;4&quot; &quot;5&quot; &quot;6&quot; &quot;7&quot; &quot;8&quot; &quot;B&quot; &quot;h&quot; &quot;H&quot; &quot;k&quot; &quot;K&quot; &quot;m&quot; &quot;M&quot;</code></pre>
+<p>Damage can be calculated as <code>Expense = A * 10^B</code>, where A is number from <code>CROPDMG</code>/<code>PROPDMG</code> field and B is exponential values from table.</p>
+<pre class="r"><code>library(&quot;xtable&quot;)
+ConvTable&lt;-data.frame(DMGEXP = powIndicator, B = c(0,1,2,3,4,5,6,7,8,9,2,2,3,3,6,6))
+xt &lt;- xtable(ConvTable)
+print(xt, type=&quot;html&quot;,include.rownames=FALSE)</code></pre>
+<!-- html table generated in R 3.1.3 by xtable 1.7-4 package -->
+<!-- Sun Oct 25 21:54:19 2015 -->
+<table border="1">
+<tr>
+<th>
+DMGEXP
+</th>
+<th>
+B
+</th>
+</tr>
+<tr>
+<td>
+0
+</td>
+<td align="right">
+0.00
+</td>
+</tr>
+<tr>
+<td>
+1
+</td>
+<td align="right">
+1.00
+</td>
+</tr>
+<tr>
+<td>
+2
+</td>
+<td align="right">
+2.00
+</td>
+</tr>
+<tr>
+<td>
+3
+</td>
+<td align="right">
+3.00
+</td>
+</tr>
+<tr>
+<td>
+4
+</td>
+<td align="right">
+4.00
+</td>
+</tr>
+<tr>
+<td>
+5
+</td>
+<td align="right">
+5.00
+</td>
+</tr>
+<tr>
+<td>
+6
+</td>
+<td align="right">
+6.00
+</td>
+</tr>
+<tr>
+<td>
+7
+</td>
+<td align="right">
+7.00
+</td>
+</tr>
+<tr>
+<td>
+8
+</td>
+<td align="right">
+8.00
+</td>
+</tr>
+<tr>
+<td>
+B
+</td>
+<td align="right">
+9.00
+</td>
+</tr>
+<tr>
+<td>
+h
+</td>
+<td align="right">
+2.00
+</td>
+</tr>
+<tr>
+<td>
+H
+</td>
+<td align="right">
+2.00
+</td>
+</tr>
+<tr>
+<td>
+k
+</td>
+<td align="right">
+3.00
+</td>
+</tr>
+<tr>
+<td>
+K
+</td>
+<td align="right">
+3.00
+</td>
+</tr>
+<tr>
+<td>
+m
+</td>
+<td align="right">
+6.00
+</td>
+</tr>
+<tr>
+<td>
+M
+</td>
+<td align="right">
+6.00
+</td>
+</tr>
+</table>
+<p>For our purposes <code>PROPDMG</code> <code>CROPDMG</code> field were recalculated acording this table to compute the total losses from property damage.</p>
+<pre class="r"><code>for (e in ConvTable$DMGEXP){
+    NOAA_data$PROPDMG[NOAA_data$PROPDMGEXP == e] &lt;-
+        NOAA_data$PROPDMG[NOAA_data$PROPDMGEXP == e]* 10 ^ ConvTable$B[ConvTable$DMGEXP == e]
+    
+    NOAA_data$CROPDMG[NOAA_data$CROPDMGEXP == e] &lt;-
+        NOAA_data$CROPDMG[NOAA_data$CROPDMGEXP == e]* 10 ^ ConvTable$B[ConvTable$DMGEXP == e]
+}</code></pre>
 </div>
 <div id="search-most-harmful-type-of-event" class="section level3">
 <h3>Search most harmful type of event</h3>
