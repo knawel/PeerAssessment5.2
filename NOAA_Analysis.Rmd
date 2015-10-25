@@ -8,13 +8,17 @@ author: Dmitry
 
 Storms and other severe weather events can cause both public health and economic problems for communities and municipalities. Many severe events can result in fatalities, injuries, and property damage, and preventing such outcomes to the extent possible is a key concern.
 In this document storms and other severe weather events from the U.S. National Oceanic and Atmospheric Administration's (NOAA) storm database are analyzed. Using whole data from 1950 to November 2011 questions about severe weather events were studied. The most harmful type of events with respect to population health and type of events with the greatest economic consequences were determined.
-For study was used this version pf database file:
-https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2FStormData.csv.bz2 and description: https://d396qusza40orc.cloudfront.net/repdata%2Fpeer2_doc%2Fpd01016005curr.pdf
 
+There was found, that:
+  
+* Tornado is most harmful with respect to population health and cause about 
+3.7% of all fatalities from weather events and 6.5% of all injuries from weather events
+  
+* Flood have the greatest economic consequences and cause 3.8% of all money losses from weather events
 
 ##Data Processing
-For analysis this reference was used:
-https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2FStormData.csv.bz2
+For study was used this version of database file:
+https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2FStormData.csv.bz2 and description: https://d396qusza40orc.cloudfront.net/repdata%2Fpeer2_doc%2Fpd01016005curr.pdf
 
 ###Getting data
 At the first, the datafile was downloaded and read.
@@ -89,7 +93,7 @@ for (e in ConvTable$DMGEXP){
 
 There are aggregated harmful weather events with respect to population health.
 
-```{r}
+```{r, cache=TRUE}
 inj.sum <- aggregate(INJURIES ~ EVTYPE, NOAA_data, sum)
 fat.sum <- aggregate(FATALITIES ~ EVTYPE, NOAA_data, sum)
 
@@ -100,56 +104,89 @@ There are 5 worst types of weather events with respect to population health.
 * INJURIES
 
 ```{r}
-head(inj.sum[order(-inj.sum$INJURIES), ])
+inj.ten <- head(inj.sum[order(-inj.sum$INJURIES), ], 5)
+print(inj.ten)
 ```
 
 * FATALITIES
 
 ```{r}
-head(fat.sum[order(-fat.sum$FATALITIES), ])
+fat.ten <- head(fat.sum[order(-fat.sum$FATALITIES), ], 5)
+print(fat.ten)
 ```
 
 So, the most harmful effect is **Tornado**. The most harmful effects in order to injuries and 
 fatalities are plotted.
 
 ```{r}
-par(mfrow=c(2,1))
-barplot(fat.sum)
 
+par(mfrow=c(1,2), mar=c(8,3,4,2)+0.1)
+barplot(inj.ten$INJURIES, main="Injuries", ylab="Numbers of injuries",
+        las=3, names.arg = inj.ten$EVTYPE)
+
+barplot(fat.ten$FATALITIES, main="Fatalities", ylab="Numbers of fatalities",
+        las=2, names.arg = inj.ten$EVTYPE)
 ```
+
+Finally, there is evaluation the percentage of injuries and fatalities from **Tornado**.
+
+```{r}
+h <- fat.ten$FATALITIES[1]/ sum(fat.sum$FATALITIES)
+print(paste0("Percentage of fatalities from Tornado:", h * 10, " %"))
+
+h <- inj.ten$INJURIES[1]/ sum(inj.sum$INJURIES)
+print(paste0("Percentage of injuries from Tornado:", h * 10, " %"))
+```
+	
+
 
 
 ###Analysis of weather events with respect to economic consequences
 
 
 Losses data for each type of damage was aggregated. 
-
 ```{r}
 crop.sum <- aggregate(CROPDMG ~ EVTYPE, NOAA_data, sum)
 prop.sum <- aggregate(PROPDMG ~ EVTYPE, NOAA_data, sum)
+```
+
+`PROPDMG` `CROPDMG` were summed, because they both mesured in US dollars. The names of most harmful events were extracted from each column (in variable `EventNames`)
+
+```{r}
+
+a <- head(crop.sum[order(-crop.sum$CROPDMG), ], 5)
+b <- head(prop.sum[order(-prop.sum$PROPDMG), ], 5)
+EventNames <- c(as.vector(a$EVTYPE), as.vector(b$EVTYPE))
+crop.sum <- crop.sum[crop.sum$EVTYPE %in% EventNames, ]
+prop.sum <- prop.sum[prop.sum$EVTYPE %in% EventNames, ]
+p.sum <- merge(crop.sum, prop.sum, by="EVTYPE")
+p.sum$SUM <- p.sum$CROPDMG + p.sum$PROPDMG
 
 ```
 
 There are 5 worst types of weather events with respect to money losses.
 
 ```{r}
-head(crop.sum[order(-crop.sum$CROPDMG), ])
-head(prop.sum[order(-prop.sum$PROPDMG), ])
+p.ten <- head(p.sum[order(-p.sum$SUM), ], 5)
+
+row.names(p.ten) <- p.ten$EVTYPE
+print(p.ten[,c(1,3)], row.names = FALSE)
 ```
 
-
-### Total damage and health effect from all weather events 
-
-To figure out weight of most harmful weather event, there are value of all causes of 
-injuries, fatalities and damage.
+So, the most harmful effect is **Flood**. The most harmful effects in order to money loss are plotted.
 
 ```{r}
-crop.tot <- sum(crop.sum$CROPDMG)
-prop.tot <- sum(prop.sum$PROPDMG)
-inj.tot <- sum(inj.sum$INJURIES)
-fat.tot <- sum(fat.sum$FATALITIES)
-print(paste0("Total numbers of injuries: ", inj.tot))
-print(paste0("Total numbers of fatalities: ", fat.tot))
-print(paste0("Total numbers of property damage: ", prop.tot/ 1e9, " B $"))      
-print(paste0("Total numbers of corporativ damage: ", crop.tot/ 1e9, " B $"))    
+
+par(mar=c(9,5,4,2)+0.3)
+barplot(p.ten$SUM/ 1e9, main="Economic damage", ylab="Billion $",
+        las=3, names.arg = p.ten$EVTYPE)
 ```
+
+Finally, there is evaluation the percentage of money loss from **Flood**.
+
+```{r}
+h <- p.ten$SUM[1]/ (sum(crop.sum$CROPDMG) + sum(prop.sum$PROPDMG))
+print(paste0("Percentage of money loss from Tornado:", h * 10, " %"))
+```
+	
+
