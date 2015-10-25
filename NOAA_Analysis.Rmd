@@ -1,15 +1,35 @@
 ---
-title: "Analysis of the NOAA Storm Database and determine influence of storm on helth and economy "
+title: "Analysis of the NOAA Storm Database and study the influence of the storm on health and economy"
 output: html_document
+author: Dmitry
 ---
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+##Synopsis
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+Storms and other severe weather events can cause both public health and economic problems for communities and municipalities. Many severe events can result in fatalities, injuries, and property damage, and preventing such outcomes to the extent possible is a key concern.
+In this document storms and other severe weather events from the U.S. National Oceanic and Atmospheric Administration's (NOAA) storm database are analyzed. Using whole data from 1950 to November 2011 questions about severe weather events were studied. The most harmful type of events with respect to population health and type of events with the greatest economic consequences were determined.
+For study was used this version pf database file:
+https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2FStormData.csv.bz2 and description: https://d396qusza40orc.cloudfront.net/repdata%2Fpeer2_doc%2Fpd01016005curr.pdf
+
+
+##Data Processing
+For analysis this reference was used:
+https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2FStormData.csv.bz2
+
+At the first, I download and read file
 
 ```{r}
-summary(cars)
+DataUrl <- "https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2FStormData.csv.bz2"
+setwd("E:/Cloud/Coursera/DataScience/5_ReprResearch/PeerAssessment5.2")
+download.file(DataUrl, destfile = "StormData.csv.bz2", method = "curl")
+#readcsvbz2file <- read.csv(bzfile(DataUrl))
+
 ```
+
+##Results
+ 
+
+
 
 You can also embed plots, for example:
 
