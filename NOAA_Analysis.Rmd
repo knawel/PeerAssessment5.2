@@ -82,15 +82,74 @@ for (e in ConvTable$DMGEXP){
 
 ```
 
-### Search most harmful type of event
+
+##Results
+ 
+###Analysis of weather events with respect to population health
+
+There are aggregated harmful weather events with respect to population health.
+
 ```{r}
-answ1 <- aggregate(NOAA_data$CROPDMG, by=list(Category=FitbitData$EVTYPE), FUN=sum)
-hist(answ1$x, main = "Total number of steps per day", xlab = "Steps per day", col = "cadetblue2")
+inj.sum <- aggregate(INJURIES ~ EVTYPE, NOAA_data, sum)
+fat.sum <- aggregate(FATALITIES ~ EVTYPE, NOAA_data, sum)
+
+```
+
+There are 5 worst types of weather events with respect to population health.
+
+* INJURIES
+
+```{r}
+head(inj.sum[order(-inj.sum$INJURIES), ])
+```
+
+* FATALITIES
+
+```{r}
+head(fat.sum[order(-fat.sum$FATALITIES), ])
+```
+
+So, the most harmful effect is **Tornado**. The most harmful effects in order to injuries and 
+fatalities are plotted.
+
+```{r}
+par(mfrow=c(2,1))
+barplot(fat.sum)
 
 ```
 
 
-##Results
- 
+###Analysis of weather events with respect to economic consequences
 
 
+Losses data for each type of damage was aggregated. 
+
+```{r}
+crop.sum <- aggregate(CROPDMG ~ EVTYPE, NOAA_data, sum)
+prop.sum <- aggregate(PROPDMG ~ EVTYPE, NOAA_data, sum)
+
+```
+
+There are 5 worst types of weather events with respect to money losses.
+
+```{r}
+head(crop.sum[order(-crop.sum$CROPDMG), ])
+head(prop.sum[order(-prop.sum$PROPDMG), ])
+```
+
+
+### Total damage and health effect from all weather events 
+
+To figure out weight of most harmful weather event, there are value of all causes of 
+injuries, fatalities and damage.
+
+```{r}
+crop.tot <- sum(crop.sum$CROPDMG)
+prop.tot <- sum(prop.sum$PROPDMG)
+inj.tot <- sum(inj.sum$INJURIES)
+fat.tot <- sum(fat.sum$FATALITIES)
+print(paste0("Total numbers of injuries: ", inj.tot))
+print(paste0("Total numbers of fatalities: ", fat.tot))
+print(paste0("Total numbers of property damage: ", prop.tot/ 1e9, " B $"))      
+print(paste0("Total numbers of corporativ damage: ", crop.tot/ 1e9, " B $"))    
+```

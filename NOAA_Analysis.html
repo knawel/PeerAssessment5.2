@@ -141,13 +141,13 @@ print(levels(NOAA_data$PROPDMGEXP))</code></pre>
                                    levels(NOAA_data$CROPDMGEXP))))[-1:-4]
 print(powIndicator)</code></pre>
 <pre><code>##  [1] &quot;0&quot; &quot;1&quot; &quot;2&quot; &quot;3&quot; &quot;4&quot; &quot;5&quot; &quot;6&quot; &quot;7&quot; &quot;8&quot; &quot;B&quot; &quot;h&quot; &quot;H&quot; &quot;k&quot; &quot;K&quot; &quot;m&quot; &quot;M&quot;</code></pre>
-<p>Damage can be calculated as <code>Expense = A * 10^B</code>, where A is number from <code>CROPDMG</code>/<code>PROPDMG</code> field and B is exponential values from table.</p>
+<p>Damage can be calculated as <code>Expense = A * 10^B</code>, where A is number from <code>CROPDMG</code>/<code>PROPDMG</code> field and B is exponential values from table. Numbers are simply B-value, <code>h/H</code> for hundreds,<code>k/K</code> for thousands, etc.</p>
 <pre class="r"><code>library(&quot;xtable&quot;)
 ConvTable&lt;-data.frame(DMGEXP = powIndicator, B = c(0,1,2,3,4,5,6,7,8,9,2,2,3,3,6,6))
 xt &lt;- xtable(ConvTable)
 print(xt, type=&quot;html&quot;,include.rownames=FALSE)</code></pre>
 <!-- html table generated in R 3.1.3 by xtable 1.7-4 package -->
-<!-- Sun Oct 25 21:54:19 2015 -->
+<!-- Sun Oct 25 22:42:43 2015 -->
 <table border="1">
 <tr>
 <th>
@@ -286,7 +286,7 @@ M
 </td>
 </tr>
 </table>
-<p>For our purposes <code>PROPDMG</code> <code>CROPDMG</code> field were recalculated acording this table to compute the total losses from property damage.</p>
+<p>For our purposes <code>PROPDMG</code> <code>CROPDMG</code> field were recalculated acording this table to compute the total losses.</p>
 <pre class="r"><code>for (e in ConvTable$DMGEXP){
     NOAA_data$PROPDMG[NOAA_data$PROPDMGEXP == e] &lt;-
         NOAA_data$PROPDMG[NOAA_data$PROPDMGEXP == e]* 10 ^ ConvTable$B[ConvTable$DMGEXP == e]
@@ -297,10 +297,72 @@ M
 </div>
 <div id="search-most-harmful-type-of-event" class="section level3">
 <h3>Search most harmful type of event</h3>
+<pre class="r"><code>inj.sum &lt;- aggregate(INJURIES ~ EVTYPE, NOAA_data, sum)
+fat.sum &lt;- aggregate(FATALITIES ~ EVTYPE, NOAA_data, sum)</code></pre>
+<p>There are 5 worst types of weather events with respect to population health.</p>
+<ul>
+<li>INJURIES</li>
+</ul>
+<pre class="r"><code>head(inj.sum[order(-inj.sum$INJURIES), ])</code></pre>
+<pre><code>##             EVTYPE INJURIES
+## 834        TORNADO    91346
+## 856      TSTM WIND     6957
+## 170          FLOOD     6789
+## 130 EXCESSIVE HEAT     6525
+## 464      LIGHTNING     5230
+## 275           HEAT     2100</code></pre>
+<ul>
+<li>FATALITIES</li>
+</ul>
+<pre class="r"><code>head(fat.sum[order(-fat.sum$FATALITIES), ])</code></pre>
+<pre><code>##             EVTYPE FATALITIES
+## 834        TORNADO       5633
+## 130 EXCESSIVE HEAT       1903
+## 153    FLASH FLOOD        978
+## 275           HEAT        937
+## 464      LIGHTNING        816
+## 856      TSTM WIND        504</code></pre>
 </div>
+<div id="search-most-expensive-type-of-event" class="section level3">
+<h3>Search most expensive type of event</h3>
+<p>Losses data for each type of damage was aggregated.</p>
+<pre class="r"><code>crop.sum &lt;- aggregate(CROPDMG ~ EVTYPE, NOAA_data, sum)
+prop.sum &lt;- aggregate(PROPDMG ~ EVTYPE, NOAA_data, sum)</code></pre>
+<p>There are 5 worst types of weather events with respect to money losses.</p>
+<pre class="r"><code>head(crop.sum[order(-crop.sum$CROPDMG), ])</code></pre>
+<pre><code>##          EVTYPE     CROPDMG
+## 95      DROUGHT 13972566000
+## 170       FLOOD  5661968450
+## 590 RIVER FLOOD  5029459000
+## 427   ICE STORM  5022113500
+## 244        HAIL  3025954473
+## 402   HURRICANE  2741910000</code></pre>
+<pre class="r"><code>head(prop.sum[order(-prop.sum$PROPDMG), ])</code></pre>
+<pre><code>##                EVTYPE      PROPDMG
+## 170             FLOOD 144657709807
+## 411 HURRICANE/TYPHOON  69305840000
+## 834           TORNADO  56947380677
+## 670       STORM SURGE  43323536000
+## 153       FLASH FLOOD  16822673979
+## 244              HAIL  15735267513</code></pre>
 </div>
-<div id="results" class="section level2">
-<h2>Results</h2>
+<div id="total-damage-and-health-effect-from-all-weather-events" class="section level3">
+<h3>Total damage and health effect from all weather events</h3>
+<p>To figure out weight of most harmful weather event, there are value of all causes of injuries, fatalities and damage.</p>
+<pre class="r"><code>crop.tot &lt;- sum(crop.sum$CROPDMG)
+prop.tot &lt;- sum(prop.sum$PROPDMG)
+inj.tot &lt;- sum(inj.sum$INJURIES)
+fat.tot &lt;- sum(fat.sum$FATALITIES)
+print(paste0(&quot;Total numbers of injuries: &quot;, inj.tot))</code></pre>
+<pre><code>## [1] &quot;Total numbers of injuries: 140528&quot;</code></pre>
+<pre class="r"><code>print(paste0(&quot;Total numbers of fatalities: &quot;, inj.tot))</code></pre>
+<pre><code>## [1] &quot;Total numbers of fatalities: 140528&quot;</code></pre>
+<pre class="r"><code>print(paste0(&quot;Total numbers of property damage: &quot;, prop.tot/ 1e9, &quot; B $&quot;))      </code></pre>
+<pre><code>## [1] &quot;Total numbers of property damage: 428.22486876771 B $&quot;</code></pre>
+<pre class="r"><code>print(paste0(&quot;Total numbers of corporativ damage: &quot;, crop.tot/ 1e9, &quot; B $&quot;))    </code></pre>
+<pre><code>## [1] &quot;Total numbers of corporativ damage: 49.104192181 B $&quot;</code></pre>
+<pre class="r"><code>##Results</code></pre>
+</div>
 </div>
 
 
