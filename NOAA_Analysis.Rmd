@@ -20,11 +20,12 @@ At the first, I download and read file
 
 ```{r}
 DataUrl <-  "https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2FStormData.csv.bz2"
-fileName <- paste0(getwd(), "/StormData.csv.bz2")
+fileName <- paste0(getwd(), "/../StormData.csv.bz2")
 if(!file.exists(fileName)){
     download.file(DataUrl, fileName)
     }
-readcsvbz2file <- read.csv(bzfile(DataUrl))
+NOAA_data <- read.csv(bzfile(fileName))
+head(NOAA_data)
 
 ```
 
