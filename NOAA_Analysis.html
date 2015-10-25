@@ -73,14 +73,20 @@ img {
 <div id="data-processing" class="section level2">
 <h2>Data Processing</h2>
 <p>For analysis this reference was used: <a href="https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2FStormData.csv.bz2">https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2FStormData.csv.bz2</a></p>
-<p>At the first, I download and read file</p>
+<div id="getting-data" class="section level3">
+<h3>Getting data</h3>
+<p>At the first, the datafile was downloaded and read.</p>
 <pre class="r"><code>DataUrl &lt;-  &quot;https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2FStormData.csv.bz2&quot;
 fileName &lt;- paste0(getwd(), &quot;/../StormData.csv.bz2&quot;)
 if(!file.exists(fileName)){
     download.file(DataUrl, fileName)
     }
-NOAA_data &lt;- read.csv(bzfile(fileName))
-head(NOAA_data)</code></pre>
+NOAA_data &lt;- read.csv(bzfile(fileName))</code></pre>
+</div>
+<div id="structure-of-data" class="section level3">
+<h3>Structure of data</h3>
+<p>There are several first lines of data presented to see structure of the data</p>
+<pre class="r"><code>head(NOAA_data)</code></pre>
 <pre><code>##   STATE__           BGN_DATE BGN_TIME TIME_ZONE COUNTY COUNTYNAME STATE
 ## 1       1  4/18/1950 0:00:00     0130       CST     97     MOBILE    AL
 ## 2       1  4/18/1950 0:00:00     0145       CST      3    BALDWIN    AL
@@ -116,6 +122,16 @@ head(NOAA_data)</code></pre>
 ## 4     3458      8626          0          0              4
 ## 5     3412      8642          0          0              5
 ## 6     3450      8748          0          0              6</code></pre>
+<p>Our study should answer two queston:</p>
+<ul>
+<li><p>Across the United States, which types of events (as indicated in the <code>EVTYPE</code> variable) are most harmful with respect to population health?</p></li>
+<li><p>Across the United States, which types of events have the greatest economic consequences?</p></li>
+</ul>
+<p>Therefore for this study will be useful next column: <code>EVTYPE</code> <code>FATALITIES</code> <code>INJURIES</code> <code>PROPDMG</code> <code>CROPDMG</code> <code>PROPDMGEXP</code> <code>CROPDMGEXP</code></p>
+</div>
+<div id="search-most-harmful-type-of-event" class="section level3">
+<h3>Search most harmful type of event</h3>
+</div>
 </div>
 <div id="results" class="section level2">
 <h2>Results</h2>

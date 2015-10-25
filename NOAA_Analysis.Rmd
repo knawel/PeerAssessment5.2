@@ -16,18 +16,34 @@ https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2FStormData.csv.bz2 and des
 For analysis this reference was used:
 https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2FStormData.csv.bz2
 
-At the first, I download and read file
+###Getting data
+At the first, the datafile was downloaded and read.
 
-```{r}
+```{r, cache=TRUE}
 DataUrl <-  "https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2FStormData.csv.bz2"
 fileName <- paste0(getwd(), "/../StormData.csv.bz2")
 if(!file.exists(fileName)){
     download.file(DataUrl, fileName)
     }
 NOAA_data <- read.csv(bzfile(fileName))
-head(NOAA_data)
-
 ```
+
+### Structure of data
+There are several first lines of data presented to see structure of the data
+```{r}
+head(NOAA_data)
+```
+
+Our study should answer two queston:
+  
+* Across the United States, which types of events (as indicated in the `EVTYPE` variable) are most harmful with respect to population health?
+  
+* Across the United States, which types of events have the greatest economic consequences?
+
+Therefore for this study will be useful next column: `EVTYPE` `FATALITIES` 
+`INJURIES` `PROPDMG` `CROPDMG` `PROPDMGEXP` `CROPDMGEXP`
+
+### Search most harmful type of event
 
 ##Results
  
